@@ -1,19 +1,28 @@
-version: '2.1'
+version: "3.2"
+
+networks:
+  backbone:
+    external:
+      name: backbone
 
 services:
-  localstack:
-    image: localstack/localstack
+  aws_localstack:
+    build: .
+    image: localstack:fix-timestamps
+    networks:
+      - backbone
     ports:
       - "4567-4593:4567-4593"
-      - "${PORT_WEB_UI-8080}:${PORT_WEB_UI-8080}"
+      - "8080:8080"
     environment:
-      - SERVICES=${SERVICES- }
-      - DEBUG=${DEBUG- }
-      - DATA_DIR=${DATA_DIR- }
-      - PORT_WEB_UI=${PORT_WEB_UI- }
-      - LAMBDA_EXECUTOR=${LAMBDA_EXECUTOR- }
-      - KINESIS_ERROR_PROBABILITY=${KINESIS_ERROR_PROBABILITY- }
+      - SERVICES=${LOCALSTACK_SERVICES:-s3,s3api,dynamodb}
+      - DATA_DIR=/tmp/localstack/data
       - DOCKER_HOST=unix:///var/run/docker.sock
+      - HOSTNAME_EXTERNAL=localstack.plista.develop
+      - START_WEB=1
+      - DEBUG=1
+      - VIRTUAL_HOST=localstack.plista.develop
+      - VIRTUAL_PORT=8080
     volumes:
-      - "${TMPDIR:-/tmp/localstack}:/tmp/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
+      - $PWD:/opt/code/localstack
